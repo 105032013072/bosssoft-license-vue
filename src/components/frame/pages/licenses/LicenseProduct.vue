@@ -147,23 +147,24 @@
    	    <Button type="primary" size="large" @click="confirmAddDes">确认新增</Button>
       </div>
     </Modal>
-   <Modal v-model="importServerFile" title="导入服务器信息文件">
+   <Modal v-model="importServerFile" title="导入服务器信息文件" footer-hide="true">
       <div>
         <Upload
         ref="upload"
         type="drag"
         :before-upload="handleUpload"
+        :show-upload-list="false"
         :on-success="uploadSuccess"
         :on-error="uploadError"
         action="/api/licenseproperty/importServerInfo.do">
-         <div v-if="file == null" style="padding: 20px 0">
+         <div style="padding: 20px 0">
             <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
             <p>点击选择或者拖拽服务器的信息文件</p>
         </div>
-        <div v-else>
-          上传文件: {{ file.name }} <Button type="text" @click="upload" :loading="loadingStatus">{{ loadingStatus ? 'Uploading' : '确认上传' }}</Button>
-        </div>
       </Upload>
+       <div v-if="file!= null">
+         <font > 上传文件: {{ file.name }} </font><Button type="text" @click="upload" :loading="loadingStatus">{{ loadingStatus ? 'Uploading' : '确认上传' }}</Button>
+        </div>
     </div>
     </Modal>
     <Modal v-model="mailModal" title="通过邮件发送License">
@@ -345,6 +346,7 @@ export default {
     },
     uploadSuccess (response, file) {
        this.loadingStatus = false
+       this.file = null
        this.$Message.success('Success')
        this.initServerProperty(response.content)
        this.closeImportServerFile()
@@ -355,19 +357,7 @@ export default {
       }
     },
     initServerProperty (data) {
-      this.works = []
       var i = 0
-      for (let item of data) {
-        if (item.name === 'region') {
-          var test1 = {
-            value: (item.value === 'unlimited') ? '' : item.value,
-            name: item.name,
-            desc: item.propertyDesc,
-            iscustomized: item.iscustomized
-          }
-          this.works.push(test1)
-        }
-      }
       for (let item of data) {
         var test = {
           value: (item.value === 'unlimited') ? '' : item.value,
@@ -375,15 +365,11 @@ export default {
           desc: item.propertyDesc,
           iscustomized: item.iscustomized
         }
-        if (test.iscustomized === '1' && test.name !== 'region') {
-          this.works.push(test)
-        } else {
-          for (i in this.detailData) {
+        for (i in this.detailData) {
             if (i === item.name) {
               this.detailData[i] = (item.value === 'unlimited') ? '' : item.value
             }
           }
-        }
       }
     },
     mailLicense() {
