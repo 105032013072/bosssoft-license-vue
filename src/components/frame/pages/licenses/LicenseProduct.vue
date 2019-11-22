@@ -162,8 +162,8 @@
             <p>点击选择或者拖拽服务器的信息文件</p>
         </div>
       </Upload>
-       <div v-if="file!= null">
-         <font > 上传文件: {{ file.name }} </font><Button type="text" @click="upload" :loading="loadingStatus">{{ loadingStatus ? 'Uploading' : '确认上传' }}</Button>
+       <div v-if="file!= null" style="margin-top: 13px">
+         <font size="3px"> 上传文件: {{ file.name }} </font><Button type="primary" style="margin-left: 100px;"  @click="upload" :loading="loadingStatus">{{ loadingStatus ? 'Uploading' : '确认上传' }}</Button>
         </div>
     </div>
     </Modal>
@@ -354,6 +354,7 @@ export default {
     uploadError (error, file) {
       if (error) {
         this.$Message.error('error')
+        this.file = null
       }
     },
     initServerProperty (data) {
