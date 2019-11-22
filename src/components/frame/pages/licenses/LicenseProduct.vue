@@ -46,7 +46,10 @@
       </Row>
       <Divider/>
       <CellGroup>
-        <Cell title="Selected" selected >基本授权项</Cell>
+        <Cell title="Selected" selected >基本授权项
+          &nbsp;&nbsp;
+           <Button v-if="displayTour || displayPm" type="primary" @click="importServerConf">导入服务器信息文件</Button>
+        </Cell>
       </CellGroup>
       <Divider/>
       <Row :gutter="16" justify="center" type="flex">
@@ -144,6 +147,25 @@
    	    <Button type="primary" size="large" @click="confirmAddDes">确认新增</Button>
       </div>
     </Modal>
+   <Modal v-model="importServerFile" title="导入服务器信息文件">
+      <div>
+        <Upload
+        ref="upload"
+        type="drag"
+        :before-upload="handleUpload"
+        :on-success="uploadSuccess"
+        :on-error="uploadError"
+        action="/api/licenseproperty/importServerInfo.do">
+         <div v-if="file == null" style="padding: 20px 0">
+            <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+            <p>点击选择或者拖拽服务器的信息文件</p>
+        </div>
+        <div v-else>
+          上传文件: {{ file.name }} <Button type="text" @click="upload" :loading="loadingStatus">{{ loadingStatus ? 'Uploading' : '确认上传' }}</Button>
+        </div>
+      </Upload>
+    </div>
+    </Modal>
     <Modal v-model="mailModal" title="通过邮件发送License">
       <label><b><font class="labelStyle">收件人邮箱*：</font></b></label>
       <Input v-model="mailData.receiver" placeholder="请只填入一个正确的邮箱地址" type="email"  style="width: 80%" />
@@ -173,6 +195,8 @@ export default {
         receiver: '',
         carbonCopy: ''
       },
+      file: null,
+      loadingStatus: false,
       display1: window.sessionStorage.getItem('display1') === 'true' ? 3 : 3,
       display2: window.sessionStorage.getItem('display2') === 'true' ? 2 : 3,
       display3: window.sessionStorage.getItem('display3') === 'true' ? 0 : 3,
@@ -311,6 +335,57 @@ export default {
     this.loadPrefixData()
   },
   methods: {
+    handleUpload (file) {
+      this.file = file
+      return false
+    },
+    upload () {
+      this.loadingStatus = true
+      this.$refs.upload.post(this.file)
+    },
+    uploadSuccess (response, file) {
+       this.loadingStatus = false
+       this.$Message.success('Success')
+       this.initServerProperty(response.content)
+       this.closeImportServerFile()
+    },
+    uploadError (error, file) {
+      if (error) {
+        this.$Message.error('error')
+      }
+    },
+    initServerProperty (data) {
+      this.works = []
+      var i = 0
+      for (let item of data) {
+        if (item.name === 'region') {
+          var test1 = {
+            value: (item.value === 'unlimited') ? '' : item.value,
+            name: item.name,
+            desc: item.propertyDesc,
+            iscustomized: item.iscustomized
+          }
+          this.works.push(test1)
+        }
+      }
+      for (let item of data) {
+        var test = {
+          value: (item.value === 'unlimited') ? '' : item.value,
+          name: item.name,
+          desc: item.propertyDesc,
+          iscustomized: item.iscustomized
+        }
+        if (test.iscustomized === '1' && test.name !== 'region') {
+          this.works.push(test)
+        } else {
+          for (i in this.detailData) {
+            if (i === item.name) {
+              this.detailData[i] = (item.value === 'unlimited') ? '' : item.value
+            }
+          }
+        }
+      }
+    },
     mailLicense() {
       var result = this.setLicenseData()
       if (!result.ledge) {
@@ -505,9 +580,17 @@ export default {
       this.addDes = true
       this.detailModal = false
     },
+    importServerConf() {
+      this.importServerFile = true
+      this.detailModal = false
+    },
     closeAddDes() {
       this.addDes = false
       this.detailModal = true
+    },
+    closeImportServerFile() {
+       this.importServerFile = false
+       this.detailModal = true
     },
     closeDeta() {
       this.detailModal = false
