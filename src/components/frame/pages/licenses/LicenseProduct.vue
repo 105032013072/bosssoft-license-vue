@@ -116,7 +116,7 @@
           <label><b><font class="labelStyle">过期时间</font></b></label>
         </Col>
         <Col v-if="detailData.isTrial === 'true'" span="9">
-          <DatePicker v-model="detailData.expiration" type="date" placeholder="Select date" style="width: 80%"></DatePicker>
+          <DatePicker v-model="detailData.expiration" type="date" placeholder="Select date" style="width: 80%" @on-change="detailData.expiration=$event"></DatePicker>
         </Col>
       </Row>
       <Divider/>
