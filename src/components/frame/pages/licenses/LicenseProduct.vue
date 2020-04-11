@@ -26,7 +26,8 @@
     </Content>
     <Modal v-model="detailModal" width="768" title="授权信息" >
       <CellGroup>
-        <Cell title="Selected" selected >基本信息</Cell>
+        <Cell title="Selected" selected >基本信息&nbsp;&nbsp;
+           <Button v-if="displayTour || displayPm" type="primary" @click="importServerConf">导入服务器信息文件</Button></Cell>
       </CellGroup>
       <Divider/>
       <Row :gutter="32" justify="center" type="flex">
@@ -46,10 +47,7 @@
       </Row>
       <Divider/>
       <CellGroup>
-        <Cell title="Selected" selected >基本授权项
-          &nbsp;&nbsp;
-           <Button v-if="displayTour || displayPm" type="primary" @click="importServerConf">导入服务器信息文件</Button>
-        </Cell>
+        <Cell title="Selected" selected >基本授权项 </Cell>
       </CellGroup>
       <Divider/>
       <Row :gutter="16" justify="center" type="flex">
@@ -116,7 +114,7 @@
           <label><b><font class="labelStyle">过期时间</font></b></label>
         </Col>
         <Col v-if="detailData.isTrial === 'true'" span="9">
-          <DatePicker v-model="detailData.expiration" type="date" placeholder="Select date" style="width: 80%" @on-change="detailData.expiration=$event"></DatePicker>
+          <DatePicker :value="detailData.expiration" type="date" placeholder="Select date" style="width: 80%" @on-change="handleChange"></DatePicker>
         </Col>
       </Row>
       <Divider/>
@@ -333,6 +331,7 @@ export default {
     }
   },
   mounted: function() {
+    // debugger
     this.loadPrefixData()
   },
   methods: {
@@ -348,6 +347,7 @@ export default {
        this.loadingStatus = false
        this.file = null
        this.$Message.success('Success')
+       debugger
        this.initServerProperty(response.content)
        this.closeImportServerFile()
     },
@@ -371,6 +371,11 @@ export default {
               this.detailData[i] = (item.value === 'unlimited') ? '' : item.value
             }
           }
+         for (let addItem of this.works) {
+          if (addItem.name === item.name) {
+            addItem.value = (item.value === 'unlimited') ? '' : item.value
+          }
+        }
       }
     },
     mailLicense() {
@@ -635,6 +640,7 @@ export default {
       var i = 0
       var names = ['productName', 'licenseId', 'productId', '是否试用', 'ip', 'mac', 'cpu', '数据库', '操作系统', '应用服务器', '过期时间', '工作流']
       for (i in this.detailData) {
+        debugger
         var test = {
           value: (this.detailData[i] === '') ? 'unlimited' : this.detailData[i],
           name: i,
@@ -768,6 +774,10 @@ export default {
         }
       }
       this.works.splice(index, 1)
+    },
+    handleChange(value) {
+      debugger
+      this.detailData.expiration = value
     }
   },
   watch: {
